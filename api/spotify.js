@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     const accessToken = tokenData.access_token;
 
     const searchResponse = await fetch(
-      `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=album&limit=8`,
+      `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=album&limit=8&market=BR`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`
@@ -64,10 +64,10 @@ export default async function handler(req, res) {
 
     const spotifyAlbums = searchData.albums?.items || [];
 
-    const albums = await Promise.all(
+    const albumsWithTracks = await Promise.all(
       spotifyAlbums.map(async album => {
-        const tracksResponse = await fetch(
-          `https://api.spotify.com/v1/albums/${album.id}/tracks?limit=50`,
+        const albumResponse = await fetch(
+          `https://api.spotify.com/v1/albums/${album.id}?market=BR`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`
@@ -75,14 +75,12 @@ export default async function handler(req, res) {
           }
         );
 
-        const tracksData = await tracksResponse.json();
+        const albumData = await albumResponse.json();
 
-        const tracks = Array.isArray(tracksData.items)
-          ? tracksData.items.map(track => ({
-              title: track.name || 'Faixa sem nome',
-              score: null
-            }))
-          : [];
+        const tracks = albumData.tracks?.items?.map(track => ({
+          title: track.name || 'Faixa sem nome',
+          score: null
+        })) || [];
 
         return {
           id: album.id,
@@ -91,21 +89,18 @@ export default async function handler(req, res) {
           year: album.release_date?.slice(0, 4) || '',
           cover: album.images?.[0]?.url || '',
           spotifyUrl: album.external_urls?.spotify || '',
-          tracks,
-
-          debugTracksStatus: tracksResponse.status,
-          debugTracksOk: tracksResponse.ok,
-          debugTracksItemsLength: tracksData.items?.length || 0,
-          debugTracksError: tracksData.error || null
+          tracks
         };
       })
     );
 
     return res.status(200).json({
-      albums
+      albums: albumsWithTracks
     });
 
   } catch (error) {
+    console.error('ERRO GERAL SPOTIFY:', error);
+
     return res.status(500).json({
       error: 'Erro interno no servidor.',
       details: error.message
