@@ -2244,4 +2244,5 @@ document.addEventListener(
     setupInitialState();
   }
 );
+}
 
