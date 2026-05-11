@@ -1,12 +1,7 @@
 export default async function handler(req, res) {
   try {
     const query = String(req.query.q || '').trim();
-
-    if (!query) {
-      return res.status(400).json({
-        error: 'Digite o nome de um álbum.'
-      });
-    }
+    const albumId = String(req.query.albumId || '').trim();
 
     const clientId = process.env.SPOTIFY_CLIENT_ID;
     const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
@@ -33,24 +28,7 @@ export default async function handler(req, res) {
       }
     );
 
-    const tokenText = await tokenResponse.text();
-
-    if (tokenResponse.status === 429) {
-      return res.status(429).json({
-        error: 'Muitas buscas feitas em pouco tempo. Espere alguns minutos e tente novamente.'
-      });
-    }
-
-    let tokenData;
-
-    try {
-      tokenData = JSON.parse(tokenText);
-    } catch {
-      return res.status(500).json({
-        error: 'Resposta inválida ao gerar token.',
-        details: tokenText
-      });
-    }
+    const tokenData = await tokenResponse.json();
 
     if (!tokenResponse.ok || !tokenData.access_token) {
       return res.status(500).json({
@@ -61,8 +39,49 @@ export default async function handler(req, res) {
 
     const accessToken = tokenData.access_token;
 
+    if (albumId) {
+      const albumResponse = await fetch(
+        `https://api.spotify.com/v1/albums/${albumId}?market=BR`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        }
+      );
+
+      const albumData = await albumResponse.json();
+
+      if (!albumResponse.ok) {
+        return res.status(500).json({
+          error: 'Erro ao buscar detalhes do álbum.',
+          details: albumData
+        });
+      }
+
+      return res.status(200).json({
+        album: {
+          id: albumData.id,
+          name: albumData.name,
+          artist: albumData.artists?.map(artist => artist.name).join(', ') || 'Artista desconhecido',
+          year: albumData.release_date?.slice(0, 4) || '',
+          cover: albumData.images?.[0]?.url || '',
+          spotifyUrl: albumData.external_urls?.spotify || '',
+          tracks: albumData.tracks?.items?.map(track => ({
+            title: track.name || 'Faixa sem nome',
+            score: null
+          })) || []
+        }
+      });
+    }
+
+    if (!query) {
+      return res.status(400).json({
+        error: 'Digite o nome de um álbum.'
+      });
+    }
+
     const searchResponse = await fetch(
-      `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=album&limit=5&market=BR`,
+      `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=album&limit=8&market=BR`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`
@@ -70,24 +89,7 @@ export default async function handler(req, res) {
       }
     );
 
-    const searchText = await searchResponse.text();
-
-    if (searchResponse.status === 429) {
-      return res.status(429).json({
-        error: 'Limite temporário do Spotify atingido. Aguarde alguns minutos.'
-      });
-    }
-
-    let searchData;
-
-    try {
-      searchData = JSON.parse(searchText);
-    } catch {
-      return res.status(500).json({
-        error: 'Resposta inválida ao buscar álbuns.',
-        details: searchText
-      });
-    }
+    const searchData = await searchResponse.json();
 
     if (!searchResponse.ok) {
       return res.status(500).json({
@@ -96,66 +98,19 @@ export default async function handler(req, res) {
       });
     }
 
-    const spotifyAlbums = searchData.albums?.items || [];
+    const albums = searchData.albums?.items?.map(album => ({
+      id: album.id,
+      name: album.name,
+      artist: album.artists?.map(artist => artist.name).join(', ') || 'Artista desconhecido',
+      year: album.release_date?.slice(0, 4) || '',
+      cover: album.images?.[0]?.url || '',
+      spotifyUrl: album.external_urls?.spotify || '',
+      tracks: []
+    })) || [];
 
-    const albumsWithTracks = await Promise.all(
-      spotifyAlbums.map(async album => {
-        const albumResponse = await fetch(
-          `https://api.spotify.com/v1/albums/${album.id}/tracks?market=BR&limit=50`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`
-            }
-          }
-        );
-
-        const albumText = await albumResponse.text();
-
-        if (albumResponse.status === 429) {
-          return {
-            id: album.id,
-            name: album.name,
-            artist: album.artists?.map(artist => artist.name).join(', ') || 'Artista desconhecido',
-            year: album.release_date?.slice(0, 4) || '',
-            cover: album.images?.[0]?.url || '',
-            spotifyUrl: album.external_urls?.spotify || '',
-            tracks: [],
-            tracklistError: 'Limite temporário do Spotify.'
-          };
-        }
-
-        let albumData;
-
-        try {
-          albumData = JSON.parse(albumText);
-        } catch {
-          albumData = {};
-        }
-
-        const tracks = albumData.items?.map(track => ({
-          title: track.name || 'Faixa sem nome',
-          score: null
-        })) || [];
-
-        return {
-          id: album.id,
-          name: album.name,
-          artist: album.artists?.map(artist => artist.name).join(', ') || 'Artista desconhecido',
-          year: album.release_date?.slice(0, 4) || '',
-          cover: album.images?.[0]?.url || '',
-          spotifyUrl: album.external_urls?.spotify || '',
-          tracks
-        };
-      })
-    );
-
-    return res.status(200).json({
-      albums: albumsWithTracks
-    });
+    return res.status(200).json({ albums });
 
   } catch (error) {
-    console.error(error);
-
     return res.status(500).json({
       error: 'Erro interno no servidor.',
       details: error.message
