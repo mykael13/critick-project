@@ -444,17 +444,6 @@ function openAlbum(albumKey = selectedAlbumKey) {
     personalReview.value = '';
   }
 
-  createTracks();
-  updateAverage();
-  validateReviewCompletion();
-  updateProfilePreview();
-
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  });
-}
-
 function createTracks() {
 
   const container =
@@ -1115,10 +1104,15 @@ async function selectSpotifyAlbum(album) {
         'feedback';
     }
 
-    const fullAlbum =
-      album.id
-        ? await getSpotifyAlbumDetails(album.id)
-        : album;
+let fullAlbum = album;
+
+try {
+  if (album.id) {
+    fullAlbum = await getSpotifyAlbumDetails(album.id);
+  }
+} catch (detailsError) {
+  console.error('Erro ao buscar tracklist:', detailsError);
+}
 
     const normalizedAlbum =
       normalizeSpotifyAlbum(fullAlbum);
