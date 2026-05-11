@@ -810,11 +810,11 @@ async function getAlbumTracks(albumId) {
 }
 
 function normalizeSpotifyTrack(track) {
-
   return {
     title:
       track.title ||
       track.name ||
+      track.trackName ||
       'Faixa sem nome',
 
     score: null
@@ -822,18 +822,21 @@ function normalizeSpotifyTrack(track) {
 }
 
 function normalizeSpotifyAlbum(album) {
+  const tracksSource =
+    album.tracks?.items ||
+    album.tracks ||
+    album.items ||
+    [];
 
   const tracks =
-    Array.isArray(album.tracks)
-      ? album.tracks.map(normalizeSpotifyTrack)
+    Array.isArray(tracksSource)
+      ? tracksSource.map(normalizeSpotifyTrack)
       : [];
 
   return {
-    id:
-      album.id || null,
+    id: album.id || null,
 
-    name:
-      album.name || 'Álbum sem nome',
+    name: album.name || 'Álbum sem nome',
 
     artist:
       album.artist ||
@@ -845,8 +848,7 @@ function normalizeSpotifyAlbum(album) {
       album.release_date?.slice(0, 4) ||
       '',
 
-    genre:
-      'Spotify',
+    genre: 'Spotify',
 
     cover:
       album.cover ||
