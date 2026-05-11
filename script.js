@@ -70,10 +70,10 @@ let currentAlbum = structuredClone(albums.midnights);
 let selectedAlbumKey = 'midnights';
 
 const DEFAULT_PROFILE_IMAGE =
-  'assets/profile/default.jpg';
+  'assets/profile/default-avatar.png';
 
 const DEFAULT_BANNER_IMAGE =
-  'assets/profile/banner.jpg';
+  'assets/profile/default-banner.png';
 
 let spotifySearchResults = [];
 
@@ -2083,47 +2083,32 @@ function setupBannerImagePreview() {
 }
 
 function setupBannerPositionControl() {
-
   const input =
-    document.getElementById(
-      'bannerPositionInput'
-    );
+    document.getElementById('bannerPositionInput');
 
   if (!input) return;
 
-  input.addEventListener(
-    'input',
-    function() {
+  input.addEventListener('input', function() {
+    const value = this.value;
 
-      const value =
-        this.value;
+    const profileBannerImage =
+      document.getElementById('profileBannerImage');
 
-      const profileBannerImage =
-        document.getElementById(
-          'profileBannerImage'
-        );
+    const settingsPreviewBanner =
+      document.getElementById('settingsPreviewBanner');
 
-      const settingsPreviewBanner =
-        document.getElementById(
-          'settingsPreviewBanner'
-        );
-
-      if (profileBannerImage) {
-
-        profileBannerImage.style.objectPosition =
-          `center ${value}%`;
-      }
-
-      if (settingsPreviewBanner) {
-
-        settingsPreviewBanner.style.objectPosition =
-          `center ${value}%`;
-      }
-
-      userProfile.bannerPosition =
-        value;
+    if (profileBannerImage) {
+      profileBannerImage.style.objectPosition =
+        `center ${value}%`;
     }
-  );
+
+    if (settingsPreviewBanner) {
+      settingsPreviewBanner.style.objectPosition =
+        `center ${value}%`;
+    }
+
+    userProfile.bannerPosition = value;
+  });
 }
 
 function setupSettingsInputs() {
@@ -2273,8 +2258,14 @@ function renderWeeklyTopAlbums() {
   grid.innerHTML =
     weeklyReviews.map((review, index) => {
 
-      return `
-        <article class="album-card">
+      const albumKey =
+  getAlbumKeyByName(review.album);
+
+return `
+  <article
+    class="album-card"
+    ${albumKey ? `onclick="openAlbum('${albumKey}')"` : ''}
+  >
 
           <div class="album-cover">
             <img
@@ -2312,6 +2303,10 @@ function renderWeeklyTopAlbums() {
         </article>
       `;
     }).join('');
+}
+
+function openFriendReview(reviewId) {
+  alert('Aqui vai abrir a avaliação completa: ' + reviewId);
 }
 
 document.addEventListener(

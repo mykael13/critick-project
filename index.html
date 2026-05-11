@@ -29,13 +29,13 @@
 
         <div class="profile-wrap">
           <button class="profile-button" onclick="toggleProfileMenu(event)">
-            <img id="topProfileImage" src="assets/profile/default.jpg" alt="Perfil">
+            <img id="topProfileImage" src="assets/profile/default-avatar.png" alt="Perfil">
             <span id="topUsername">@usuario</span>
           </button>
 
           <div class="profile-menu" id="profileMenu">
             <div class="profile-menu-head">
-              <img id="profileMenuImage" src="assets/profile/default.jpg" alt="Perfil">
+              <img id="profileMenuImage" src="assets/profile/default-avatar.png" alt="Perfil">
 
               <div>
                 <strong id="profileMenuUsername">@usuario</strong>
@@ -115,43 +115,50 @@
           </p>
         </div>
 
-        <div class="friends-activity">
+<div class="friends-activity">
+  <div class="activity-track" id="friendsActivityTrack">
 
-  <div
-    class="activity-track"
-    id="friendsActivityTrack"
-  >
+    <div class="activity-card" onclick="openFriendReview('ana-midnights')">
+      <img src="assets/covers/midnights.jpg" alt="Midnights">
 
-    <div class="activity-card">
-      <img src="assets/covers/midnights.jpg">
-
-      <div>
-        <strong>
-          @ana avaliou Midnights
-        </strong>
-
-        <span>
-          9.4 · Taylor Swift
-        </span>
+      <div class="activity-info">
+        <strong>@ana</strong>
+        <span>Midnights · 9.4</span>
+        <p>“Um álbum íntimo, noturno e muito bem construído...”</p>
       </div>
     </div>
 
-    <div class="activity-card">
-      <img src="assets/covers/brat.jpg">
+    <div class="activity-card" onclick="openFriendReview('joao-brat')">
+      <img src="assets/covers/brat.jpg" alt="BRAT">
 
-      <div>
-        <strong>
-          @joao avaliou BRAT
-        </strong>
+      <div class="activity-info">
+        <strong>@joao</strong>
+        <span>BRAT · 9.8</span>
+        <p>“Um álbum viciante, caótico e bem produzido...”</p>
+      </div>
+    </div>
 
-        <span>
-          9.8 · Charli xcx
-        </span>
+    <div class="activity-card" onclick="openFriendReview('ana-midnights')">
+      <img src="assets/covers/midnights.jpg" alt="Midnights">
+
+      <div class="activity-info">
+        <strong>@ana</strong>
+        <span>Midnights · 9.4</span>
+        <p>“Um álbum íntimo, noturno e muito bem construído...”</p>
+      </div>
+    </div>
+
+    <div class="activity-card" onclick="openFriendReview('joao-brat')">
+      <img src="assets/covers/brat.jpg" alt="BRAT">
+
+      <div class="activity-info">
+        <strong>@joao</strong>
+        <span>BRAT · 9.8</span>
+        <p>“Um álbum viciante, caótico e bem produzido...”</p>
       </div>
     </div>
 
   </div>
-
 </div>
       </aside>
     </section>
@@ -312,11 +319,11 @@
         <button class="profile-close" onclick="closeProfilePanel()">Fechar</button>
 
         <div class="profile-banner">
-          <img id="profileBannerImage" src="assets/profile/banner.jpg" alt="Banner do perfil">
+          <img id="profileBannerImage" src="assets/profile/default-banner.png" alt="Banner do perfil">
         </div>
 
         <div class="profile-info-area">
-          <img id="profileImageBig" src="assets/profile/default.jpg" alt="Perfil">
+          <img id="profileImageBig" src="assets/profile/default-avatar.png" alt="Perfil">
 
           <div class="profile-main-info">
             <h2 id="profileDisplayName">Usuário</h2>
@@ -411,6 +418,23 @@
 
 <label>Banner</label>
 
+<div class="banner-adjust-box" id="bannerAdjustBox">
+  <p class="banner-help">
+    Recomendado: imagem em 680x240. Ajuste a posição do banner abaixo.
+  </p>
+
+  <div class="banner-position-control">
+    <label>Posição do banner</label>
+    <input
+      id="bannerPositionInput"
+      type="range"
+      min="0"
+      max="100"
+      value="50"
+    >
+  </div>
+</div>
+
 <div class="image-action-row">
   <button
     type="button"
@@ -436,29 +460,12 @@
   accept="image/*"
 >
 
-<div class="banner-adjust-box" id="bannerAdjustBox">
-  <p class="banner-help">
-    Recomendado: imagem em 680x240. Ajuste a posição do banner abaixo.
-  </p>
-
-  <div class="banner-position-control">
-    <label>Posição do banner</label>
-    <input
-      id="bannerPositionInput"
-      type="range"
-      min="0"
-      max="100"
-      value="50"
-    >
-  </div>
-</div>
-
         <div class="settings-preview">
 
   <div class="settings-preview-banner">
     <img
       id="settingsPreviewBanner"
-      src="assets/profile/banner.jpg"
+      src="assets/profile/default-banner.png"
       alt=""
     />
   </div>
@@ -468,7 +475,7 @@
     <img
       id="settingsPreviewAvatar"
       class="settings-preview-avatar"
-      src="assets/profile/default.jpg"
+      src="assets/profile/default-avatar.png"
       alt=""
     />
 
