@@ -2184,78 +2184,141 @@ function setupInitialState() {
 }
 
 function renderWeeklyTopAlbums() {
-  const grid = document.querySelector('#albumsSection .album-grid');
-  const title = document.querySelector('#albumsSection .section-title');
-  const subtitle = document.querySelector('#albumsSection .section-subtitle');
+
+  const grid =
+    document.querySelector(
+      '#albumsSection .album-grid'
+    );
+
+  const title =
+    document.querySelector(
+      '#albumsSection .section-title'
+    );
+
+  const subtitle =
+    document.querySelector(
+      '#albumsSection .section-subtitle'
+    );
 
   if (!grid) return;
 
   if (title) {
-    title.textContent = 'Top 10 da semana';
+    title.textContent =
+      'Top 10 da semana';
   }
 
   if (subtitle) {
-    subtitle.textContent = 'Os álbuns mais bem avaliados por você nos últimos 7 dias.';
+    subtitle.textContent =
+      'Os álbuns mais bem avaliados da semana.';
   }
 
   const reviews =
-    JSON.parse(localStorage.getItem('critickReviews')) || [];
+    JSON.parse(
+      localStorage.getItem('critickReviews')
+    ) || [];
 
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const sevenDaysAgo =
+    new Date();
 
-  const weeklyReviews = reviews
-    .filter(review => {
-      if (!review.date) return true;
+  sevenDaysAgo.setDate(
+    sevenDaysAgo.getDate() - 7
+  );
 
-      const [day, month, year] = review.date.split('/');
-      const reviewDate = new Date(`${year}-${month}-${day}`);
+  const weeklyReviews =
+    reviews
 
-      return reviewDate >= sevenDaysAgo;
-    })
-    .sort((a, b) => Number(b.average) - Number(a.average))
-    .slice(0, 10);
+      .filter(review => {
+
+        if (!review.date) {
+          return true;
+        }
+
+        const [day, month, year] =
+          review.date.split('/');
+
+        const reviewDate =
+          new Date(
+            `${year}-${month}-${day}`
+          );
+
+        return reviewDate >= sevenDaysAgo;
+      })
+
+      .sort((a, b) => {
+        return Number(b.average) -
+          Number(a.average);
+      })
+
+      .slice(0, 10);
 
   if (!weeklyReviews.length) {
+
     grid.innerHTML = `
       <div class="album-card">
         <div class="album-card-body">
-          <h3>Nenhuma avaliação ainda</h3>
-          <p>Avalie alguns álbuns para montar seu Top 10 da semana.</p>
+          <h3>
+            Nenhuma avaliação ainda
+          </h3>
+
+          <p>
+            Avalie alguns álbuns para montar o ranking.
+          </p>
         </div>
       </div>
     `;
+
     return;
   }
 
-  grid.innerHTML = weeklyReviews.map((review, index) => `
-    <article class="album-card">
-      <div class="album-cover">
-        <img src="${review.cover}" alt="Capa do álbum ${review.album}">
-      </div>
+  grid.innerHTML =
+    weeklyReviews.map((review, index) => {
 
-      <div class="album-card-body">
-        <div>
-          <h3>${index + 1}. ${review.album}</h3>
-          <p>${review.artist} · ${review.year || ''}</p>
-        </div>
+      return `
+        <article class="album-card">
 
-        <div class="album-meta">
-          <span class="score-pill">${Number(review.average).toFixed(1)}</span>
-          <span class="muted-pill">${review.trackCount || 0} faixas</span>
-        </div>
-      </div>
-    </article>
-  `).join('');
+          <div class="album-cover">
+            <img
+              src="${review.cover}"
+              alt="${review.album}"
+            />
+          </div>
+
+          <div class="album-card-body">
+
+            <div>
+              <h3>
+                #${index + 1} ${review.album}
+              </h3>
+
+              <p>
+                ${review.artist} · ${review.year || '—'}
+              </p>
+            </div>
+
+            <div class="album-meta">
+
+              <span class="score-pill">
+                ${Number(review.average).toFixed(1)}
+              </span>
+
+              <span class="muted-pill">
+                ${review.trackCount || 0} faixas
+              </span>
+
+            </div>
+
+          </div>
+
+        </article>
+      `;
+    }).join('');
 }
-
-document.addEventListener('DOMContentLoaded', function () {
-  renderWeeklyTopAlbums();
-});
 
 document.addEventListener(
   'DOMContentLoaded',
   function() {
+
+    renderWeeklyTopAlbums();
 
     setupSettingsInputs();
 
