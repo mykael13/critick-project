@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Critick</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <script src="script.js" defer></script>
+</head>
+
+<body>
+  <main class="page">
+
+    <header class="topbar">
+      <button class="brand brand-button" onclick="goHome()">
+        Critick
+      </button>
+
+      <nav class="nav">
+        <button onclick="scrollToAlbums()">Álbuns</button>
+        <button onclick="focusFriendSearch()">Amigos</button>
+        <button onclick="focusAlbumSearch()">Buscar</button>
+      </nav>
+
+      <div class="right-status">
+        <span>Brasil · música · opinião livre</span>
+
+        <div class="profile-wrap">
+          <button class="profile-button" onclick="toggleProfileMenu(event)">
+            <img id="topProfileImage" src="assets/profile/default.jpg" alt="Perfil">
+            <span id="topUsername">@usuario</span>
+          </button>
+
+          <div class="profile-menu" id="profileMenu">
+            <div class="profile-menu-head">
+              <img id="profileMenuImage" src="assets/profile/default.jpg" alt="Perfil">
+
+              <div>
+                <strong id="profileMenuUsername">@usuario</strong>
+                <span>Perfil Critick</span>
+              </div>
+            </div>
+
+            <button onclick="openProfilePanel()">Ver perfil</button>
+            <button onclick="openSettingsPanel()">Configurações</button>
+          </div>
+        </div>
+
+        <div class="notification-wrap">
+          <button class="notification-btn" onclick="toggleNotifications(event)">
+            Notificações
+            <span class="notification-dot" id="notificationDot"></span>
+          </button>
+
+          <div class="notification-panel" id="notificationPanel">
+            <div class="notification-title">Central de notificações</div>
+            <div class="notification-list" id="notificationList"></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="hero" id="hero">
+      <div>
+        <div class="eyebrow">
+          <span class="dot"></span>
+          Plataforma editorial de avaliações musicais
+        </div>
+
+        <h1 class="title">Critick</h1>
+
+        <p class="intro">
+          Critick é o novo site brasileiro onde, no futuro, todos poderão avaliar seus próprios álbuns sem regras, sem padrões… e sem que ninguém critique você.
+        </p>
+      </div>
+
+      <aside class="hero-side">
+        <div class="search-card" id="albumSearchCard">
+          <label>Pesquisar álbum</label>
+
+          <div class="search-row">
+            <div class="search-wrapper">
+              <input
+                id="albumSearchInput"
+                type="text"
+                placeholder="Pesquisar álbum"
+                autocomplete="off"
+                oninput="showAlbumSuggestions()"
+                onfocus="showAlbumSuggestions()"
+              />
+
+              <div class="suggestions" id="albumSuggestions"></div>
+            </div>
+
+            <button class="black-btn" onclick="searchAlbum()">Buscar</button>
+          </div>
+
+          <p class="feedback" id="albumFeedback">
+            Escolha um álbum disponível para abrir a avaliação.
+          </p>
+        </div>
+
+        <div class="search-card" id="friendSearchCard">
+          <label>Encontrar amigos</label>
+
+          <div class="search-row">
+            <input id="friendInput" type="text" placeholder="Digite um @usuário" />
+            <button class="black-btn" onclick="searchFriend()">Buscar</button>
+          </div>
+
+          <p class="feedback" id="friendFeedback">
+            Procure amigos para ver avaliações deles. No momento, ainda não há usuários cadastrados.
+          </p>
+        </div>
+
+        <div class="mini-grid">
+          <div class="mini-stat">
+            <strong>02</strong>
+            <span>álbuns base</span>
+          </div>
+
+          <div class="mini-stat">
+            <strong>28</strong>
+            <span>faixas</span>
+          </div>
+
+          <div class="mini-stat">
+            <strong>0.5</strong>
+            <span>escala</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section" id="albumsSection">
+      <div class="section-head">
+        <h2 class="section-title">Álbuns em destaque</h2>
+
+        <p class="section-subtitle">
+          Por enquanto, o Critick está usando poucos álbuns como base. Depois, esta área pode virar uma galeria completa.
+        </p>
+      </div>
+
+      <div class="album-grid">
+        <article class="album-card" onclick="openAlbum('midnights')">
+          <div class="album-cover">
+            <img
+              src="assets/covers/midnights.jpg"
+              alt="Capa do álbum Midnights"
+            />
+          </div>
+
+          <div class="album-card-body">
+            <div>
+              <h3>Midnights</h3>
+              <p>Taylor Swift · 2022</p>
+            </div>
+
+            <div class="album-meta">
+              <span class="score-pill" id="cardScoreMidnights">0.0</span>
+              <span class="muted-pill">13 faixas</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="album-card brat-featured" onclick="openAlbum('brat')">
+          <div class="album-cover">
+            <img
+              src="assets/covers/brat.jpg"
+              alt="Capa do álbum BRAT"
+            />
+          </div>
+
+          <div class="album-card-body">
+            <div>
+              <h3>BRAT</h3>
+              <p>Charli xcx · 2024</p>
+            </div>
+
+            <div class="album-meta">
+              <span class="score-pill" id="cardScoreBrat">0.0</span>
+              <span class="muted-pill">15 faixas</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="album-panel" id="albumPanel">
+      <div class="album-layout">
+        <aside class="sticky-album">
+          <div class="big-cover" id="albumCover">
+            <img
+              src="assets/covers/midnights.jpg"
+              alt="Capa do álbum Midnights"
+            />
+          </div>
+
+          <div class="album-actions">
+            <button
+              class="black-btn"
+              id="submitReviewBtn"
+              onclick="submitReview()"
+              disabled
+            >
+              Dar nota
+            </button>
+
+            <button class="ghost-btn" onclick="goHome()">
+              Voltar
+            </button>
+          </div>
+
+          <p class="feedback" id="reviewRequirement">
+            Avalie todas as faixas para liberar sua nota.
+          </p>
+        </aside>
+
+        <div class="review-main">
+          <div>
+            <div class="album-kicker">Álbum em avaliação</div>
+            <h2 class="album-name" id="albumName">Midnights</h2>
+            <p class="artist" id="albumArtist">Taylor Swift · 2022 · Synth-pop</p>
+          </div>
+
+          <div class="score-row">
+            <div class="average" id="averageScore">0.0</div>
+
+            <div class="score-copy">
+              <strong>Sua média do álbum</strong>
+              <span>A nota final muda automaticamente conforme você avalia cada música.</span>
+            </div>
+          </div>
+
+          <div class="personal-review">
+            <label>Review pessoal (opcional)</label>
+
+            <textarea
+              id="personalReview"
+              placeholder="Escreva o que você achou do álbum... Ex: é bom, porém falta algo mais marcante."
+              oninput="updateProfilePreview()"
+            ></textarea>
+
+            <div class="profile-preview" id="profilePreview">
+              <strong>Prévia no seu perfil</strong>
+              <span id="profileReviewText"></span>
+            </div>
+          </div>
+
+          <div id="ratingsArea">
+            <div class="tracks-head">
+              <span>#</span>
+              <span>Faixa</span>
+              <span>Avaliação</span>
+              <span>Nota</span>
+            </div>
+
+            <div class="tracks" id="tracksContainer"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="completion-message" id="completionMessage">
+      <div class="completion-card">
+        <h2>Você Critickou.</h2>
+
+        <p>
+          Sua avaliação foi enviada para o Critick. Agora ela pode aparecer no seu perfil e nas avaliações recentes da plataforma.
+        </p>
+
+        <div class="completion-actions">
+          <button class="black-btn" onclick="closeCompletionMessage()">
+            Continuar
+          </button>
+
+          <button class="ghost-btn" onclick="goHome()">
+            Voltar ao início
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-space"></div>
+
+    <div class="profile-panel" id="profilePanel">
+      <div class="profile-card">
+        <button class="profile-close" onclick="closeProfilePanel()">Fechar</button>
+
+        <div class="profile-banner">
+          <img id="profileBannerImage" src="assets/profile/banner.jpg" alt="Banner do perfil">
+        </div>
+
+        <div class="profile-info-area">
+          <img id="profileImageBig" src="assets/profile/default.jpg" alt="Perfil">
+
+          <div class="profile-main-info">
+            <h2 id="profileDisplayName">Usuário</h2>
+            <span id="profileUsernameBig">@usuario</span>
+            <p id="profileBio">Sua bio aparecerá aqui.</p>
+          </div>
+        </div>
+
+        <div class="profile-stats">
+          <div class="profile-stat">
+            <strong id="profileReviewCount">0</strong>
+            <span>álbuns avaliados</span>
+          </div>
+
+          <div class="profile-stat">
+            <strong id="profileTrackCount">0</strong>
+            <span>faixas avaliadas</span>
+          </div>
+
+          <div class="profile-stat">
+            <strong id="profileFavoriteAlbum">—</strong>
+            <span>álbum favorito</span>
+          </div>
+
+          <div class="profile-stat">
+            <strong id="profileHighestScore">0.0</strong>
+            <span>maior nota</span>
+          </div>
+        </div>
+
+        <div class="profile-reviews" id="profileReviews">
+          <p class="empty-profile">Você ainda não avaliou nenhum álbum.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-panel" id="settingsPanel">
+      <div class="settings-card">
+        <button class="profile-close" onclick="closeSettingsPanel()">Fechar</button>
+
+        <h2>Configurações</h2>
+
+        <label>Nome de exibição</label>
+        <input id="displayNameInput" type="text" placeholder="Usuário">
+
+        <label>@ de usuário</label>
+<div class="username-input-wrap">
+
+  <span>@</span>
+
+  <input
+    id="usernameInput"
+    type="text"
+    placeholder="usuario"
+  >
+<p class="username-warning" id="usernameWarning"></p>
+
+</div>
+        <label>Bio</label>
+        <textarea id="bioInput" placeholder="Escreva sua bio..."></textarea>
+
+        <div class="bio-counter">
+  <span id="bioCounter">0</span>/120
+</div>
+
+<label>Avatar</label>
+
+<div class="image-action-row">
+  <button
+    type="button"
+    class="image-action-primary"
+    onclick="document.getElementById('profileImageInput').click()"
+  >
+    Mudar avatar
+  </button>
+
+  <button
+    type="button"
+    class="image-action-secondary"
+    onclick="removeProfileAvatar()"
+  >
+    Remover avatar
+  </button>
+</div>
+
+<input
+  id="profileImageInput"
+  class="hidden-file-input"
+  type="file"
+  accept="image/*"
+>
+
+<label>Banner</label>
+
+<div class="image-action-row">
+  <button
+    type="button"
+    class="image-action-primary"
+    onclick="document.getElementById('bannerImageInput').click()"
+  >
+    Mudar banner
+  </button>
+
+  <button
+    type="button"
+    class="image-action-secondary"
+    onclick="removeProfileBanner()"
+  >
+    Remover banner
+  </button>
+</div>
+
+<input
+  id="bannerImageInput"
+  class="hidden-file-input"
+  type="file"
+  accept="image/*"
+>
+
+<div class="banner-adjust-box" id="bannerAdjustBox">
+  <p class="banner-help">
+    Recomendado: imagem em 680x240. Ajuste a posição do banner abaixo.
+  </p>
+
+  <div class="banner-position-control">
+    <label>Posição do banner</label>
+    <input
+      id="bannerPositionInput"
+      type="range"
+      min="0"
+      max="100"
+      value="50"
+    >
+  </div>
+</div>
+
+        <div class="settings-preview">
+
+  <div class="settings-preview-banner">
+    <img
+      id="settingsPreviewBanner"
+      src="assets/profile/banner.jpg"
+      alt=""
+    />
+  </div>
+
+  <div class="settings-preview-content">
+
+    <img
+      id="settingsPreviewAvatar"
+      class="settings-preview-avatar"
+      src="assets/profile/default.jpg"
+      alt=""
+    />
+
+    <div class="settings-preview-info">
+      <h3 id="settingsPreviewName">
+        Seu nome
+      </h3>
+
+      <span id="settingsPreviewUsername">
+        @usuario
+      </span>
+
+      <p id="settingsPreviewBio">
+        Sua bio aparecerá aqui.
+      </p>
+    </div>
+
+  </div>
+
+</div>
+
+        <button class="black-btn" onclick="saveProfileSettings()">
+          Salvar alterações
+        </button>
+      </div>
+    </div>
+
+  </main>
+</body>
+</html>
