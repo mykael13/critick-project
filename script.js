@@ -127,12 +127,15 @@ function normalizeReviews() {
         review.average;
     })
 
-    .map(review => {
+.map(review => {
 
-      const albumData =
-        albumKey
-          ? albums[albumKey]
-          : null;
+  const albumKey =
+    getAlbumKeyByName(review.album);
+
+  const albumData =
+    albumKey
+      ? albums[albumKey]
+      : null;
 
       return {
 
@@ -2254,9 +2257,6 @@ function renderWeeklyTopAlbums() {
 
   grid.innerHTML =
     weeklyReviews.map((review, index) => {
-
-      const albumKey =
-  getAlbumKeyByName(review.album);
 
 return `
   <article
