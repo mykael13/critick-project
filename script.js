@@ -650,6 +650,7 @@ function submitReview() {
     JSON.stringify(userReviews)
   );
 
+  renderWeeklyTopAlbums();
   renderProfileReviews();
 
   const albumPanel =
@@ -2181,6 +2182,76 @@ function setupInitialState() {
 
   validateReviewCompletion();
 }
+
+function renderWeeklyTopAlbums() {
+  const grid = document.querySelector('#albumsSection .album-grid');
+  const title = document.querySelector('#albumsSection .section-title');
+  const subtitle = document.querySelector('#albumsSection .section-subtitle');
+
+  if (!grid) return;
+
+  if (title) {
+    title.textContent = 'Top 10 da semana';
+  }
+
+  if (subtitle) {
+    subtitle.textContent = 'Os álbuns mais bem avaliados por você nos últimos 7 dias.';
+  }
+
+  const reviews =
+    JSON.parse(localStorage.getItem('critickReviews')) || [];
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const weeklyReviews = reviews
+    .filter(review => {
+      if (!review.date) return true;
+
+      const [day, month, year] = review.date.split('/');
+      const reviewDate = new Date(`${year}-${month}-${day}`);
+
+      return reviewDate >= sevenDaysAgo;
+    })
+    .sort((a, b) => Number(b.average) - Number(a.average))
+    .slice(0, 10);
+
+  if (!weeklyReviews.length) {
+    grid.innerHTML = `
+      <div class="album-card">
+        <div class="album-card-body">
+          <h3>Nenhuma avaliação ainda</h3>
+          <p>Avalie alguns álbuns para montar seu Top 10 da semana.</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = weeklyReviews.map((review, index) => `
+    <article class="album-card">
+      <div class="album-cover">
+        <img src="${review.cover}" alt="Capa do álbum ${review.album}">
+      </div>
+
+      <div class="album-card-body">
+        <div>
+          <h3>${index + 1}. ${review.album}</h3>
+          <p>${review.artist} · ${review.year || ''}</p>
+        </div>
+
+        <div class="album-meta">
+          <span class="score-pill">${Number(review.average).toFixed(1)}</span>
+          <span class="muted-pill">${review.trackCount || 0} faixas</span>
+        </div>
+      </div>
+    </article>
+  `).join('');
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  renderWeeklyTopAlbums();
+});
 
 document.addEventListener(
   'DOMContentLoaded',
