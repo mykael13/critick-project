@@ -2204,12 +2204,12 @@ function renderWeeklyTopAlbums() {
 
   if (title) {
     title.textContent =
-      'Top 10 da semana';
+      'Álbuns em destaque';
   }
 
   if (subtitle) {
     subtitle.textContent =
-      'Os álbuns mais bem avaliados da semana.';
+      'Os 10 álbuns mais bem avaliados da semana.';
   }
 
   const reviews =
