@@ -22,9 +22,7 @@ export default async function handler(req, res) {
 
       return res.status(500).json({
         error:
-          'Credenciais do Spotify não configuradas.',
-        hint:
-          'Adicione SPOTIFY_CLIENT_ID e SPOTIFY_CLIENT_SECRET na Vercel.'
+          'Credenciais do Spotify não configuradas.'
       });
     }
 
@@ -33,9 +31,7 @@ export default async function handler(req, res) {
         .from(`${clientId}:${clientSecret}`)
         .toString('base64');
 
-    // =========================
     // TOKEN
-    // =========================
 
     const tokenResponse =
       await fetch(
@@ -62,82 +58,78 @@ export default async function handler(req, res) {
       !tokenData.access_token
     ) {
 
-      console.error(
-        'ERRO TOKEN:',
-        tokenData
-      );
-
       return res.status(500).json({
         error:
           'Erro ao gerar token do Spotify.',
-
         details:
           tokenData
       });
     }
 
-    // =========================
-    // BUSCA ÁLBUNS
-    // =========================
+    const accessToken =
+      tokenData.access_token;
 
-    const searchUrl =
-      `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=album&limit=8&market=BR`;
+    // BUSCA ÁLBUNS
 
     const searchResponse =
-      await fetch(searchUrl, {
-
-        headers: {
-          Authorization:
-            `Bearer ${tokenData.access_token}`
+      await fetch(
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=album&limit=8&market=BR`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${accessToken}`
+          }
         }
-      });
+      );
 
     const searchData =
       await searchResponse.json();
 
     if (!searchResponse.ok) {
 
-      console.error(
-        'ERRO SEARCH:',
-        searchData
-      );
-
       return res.status(500).json({
         error:
           'Erro ao buscar álbuns.',
-
         details:
           searchData
       });
     }
 
-    const spotifyAlbums =
+    const albums =
       searchData.albums?.items || [];
 
-    // =========================
     // TRACKLIST
-    // =========================
 
     const albumsWithTracks =
       await Promise.all(
 
-        spotifyAlbums.map(async (album) => {
+        albums.map(async (album) => {
 
           try {
 
-            const albumResponse =
+            const tracksResponse =
               await fetch(
-                `https://api.spotify.com/v1/albums/${album.id}?market=BR`,
+                `https://api.spotify.com/v1/albums/${album.id}/tracks?market=BR&limit=50`,
                 {
                   headers: {
                     Authorization:
-                      `Bearer ${tokenData.access_token}`
+                      `Bearer ${accessToken}`
                   }
                 }
               );
 
-            const albumData =
-              await albumResponse.json();
+            const tracksData =
+              await tracksResponse.json();
+
+            const tracks =
+              (tracksData.items || []).map(track => ({
+                title:
+                  track.name ||
+                  'Faixa sem nome',
+
+                score:
+                  null
+              }));
 
             return {
 
@@ -166,18 +158,14 @@ export default async function handler(req, res) {
                 album.external_urls?.spotify
                 || '',
 
-              tracks:
-                albumData.tracks?.items?.map(track => ({
-                  title: track.name,
-                  score: null
-                })) || []
+              tracks
             };
 
-          } catch (albumError) {
+          } catch (error) {
 
             console.error(
-              'ERRO TRACKLIST:',
-              albumError
+              'Erro faixas:',
+              error
             );
 
             return {
@@ -213,10 +201,6 @@ export default async function handler(req, res) {
         })
       );
 
-    // =========================
-    // RESPONSE
-    // =========================
-
     return res.status(200).json({
       albums:
         albumsWithTracks
@@ -224,17 +208,11 @@ export default async function handler(req, res) {
 
   } catch (error) {
 
-    console.error(
-      'ERRO GERAL:',
-      error
-    );
+    console.error(error);
 
     return res.status(500).json({
       error:
-        'Erro interno no servidor.',
-
-      details:
-        error.message
+        'Erro interno no servidor.'
     });
   }
 }
