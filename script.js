@@ -201,23 +201,6 @@ async function searchSpotifyAlbums(query) {
   return data.albums || [];
 }
 
-async function getSpotifyAlbumDetails(albumId) {
-  const response =
-    await fetch(`/api/spotify?albumId=${encodeURIComponent(albumId)}`);
-
-  const data =
-    await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data.error ||
-      'Erro ao buscar detalhes do álbum.'
-    );
-  }
-
-  return data.album;
-}
-
 function hideAlbumSuggestions() {
 
   const suggestions =
@@ -444,6 +427,17 @@ function openAlbum(albumKey = selectedAlbumKey) {
     personalReview.value = '';
   }
 
+  createTracks();
+  updateAverage();
+  validateReviewCompletion();
+  updateProfilePreview();
+
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+}
+
 function createTracks() {
 
   const container =
@@ -454,16 +448,6 @@ function createTracks() {
   if (!container) return;
 
   container.innerHTML = '';
-
-  if (!currentAlbum.tracks || currentAlbum.tracks.length === 0) {
-  container.innerHTML = `
-    <p class="empty-profile">
-      Não foi possível carregar a tracklist desse álbum. Tente novamente em alguns minutos.
-    </p>
-  `;
-
-  return;
-}
 
   currentAlbum.tracks.forEach(
     (track, index) => {
@@ -805,28 +789,32 @@ function focusAlbumSearch() {
   }, 100);
 }
 
-async function getSpotifyAlbumDetails(albumId) {
-  const response = await fetch(
-    `/api/spotify?albumId=${encodeURIComponent(albumId)}`
-  );
+async function getAlbumTracks(albumId) {
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data.error || 'Erro ao buscar detalhes do álbum.'
+  const response =
+    await fetch(
+      `/api/spotify/album/${albumId}`
     );
-  }
 
-  return data.album;
+  const data =
+    await response.json();
+
+  console.log('API RESPONSE:', data);
+
+  return (
+    data.items ||
+    data.tracks?.items ||
+    data.tracks ||
+    []
+  );
 }
 
 function normalizeSpotifyTrack(track) {
+
   return {
     title:
       track.title ||
       track.name ||
-      track.trackName ||
       'Faixa sem nome',
 
     score: null
@@ -834,21 +822,18 @@ function normalizeSpotifyTrack(track) {
 }
 
 function normalizeSpotifyAlbum(album) {
-  const tracksSource =
-    album.tracks?.items ||
-    album.tracks ||
-    album.items ||
-    [];
 
   const tracks =
-    Array.isArray(tracksSource)
-      ? tracksSource.map(normalizeSpotifyTrack)
+    Array.isArray(album.tracks)
+      ? album.tracks.map(normalizeSpotifyTrack)
       : [];
 
   return {
-    id: album.id || null,
+    id:
+      album.id || null,
 
-    name: album.name || 'Álbum sem nome',
+    name:
+      album.name || 'Álbum sem nome',
 
     artist:
       album.artist ||
@@ -860,14 +845,23 @@ function normalizeSpotifyAlbum(album) {
       album.release_date?.slice(0, 4) ||
       '',
 
-    genre: 'Spotify',
+    genre:
+      'Spotify',
 
     cover:
       album.cover ||
       album.images?.[0]?.url ||
       DEFAULT_PROFILE_IMAGE,
 
-    tracks: tracks
+    tracks:
+      tracks.length > 0
+        ? tracks
+        : [
+            {
+              title: 'Avaliação geral do álbum',
+              score: null
+            }
+          ]
   };
 }
 
@@ -946,8 +940,6 @@ async function searchAlbum() {
     selectSpotifyAlbum(
       results[0]
     );
-
-
 
   } catch (error) {
 
@@ -1090,103 +1082,88 @@ function selectSpotifyAlbumFromIndex(index) {
 }
 
 async function selectSpotifyAlbum(album) {
-  try {
-    const feedback =
-      document.getElementById('albumFeedback');
 
-    if (feedback) {
-      feedback.textContent =
-        'Carregando tracklist do álbum...';
+  const normalizedAlbum =
+    normalizeSpotifyAlbum(album);
 
-      feedback.className =
-        'feedback';
-    }
+  currentAlbum =
+    normalizedAlbum;
 
-    const fullAlbum =
-      album.id
-        ? await getSpotifyAlbumDetails(album.id)
-        : album;
+  selectedAlbumKey =
+    '';
 
-    const normalizedAlbum =
-      normalizeSpotifyAlbum(fullAlbum);
+  const albumName =
+    document.getElementById(
+      'albumName'
+    );
 
-    currentAlbum =
-      normalizedAlbum;
+  const albumArtist =
+    document.getElementById(
+      'albumArtist'
+    );
 
-    selectedAlbumKey =
-      '';
+  const albumCover =
+    document.getElementById(
+      'albumCover'
+    );
 
-    const albumName =
-      document.getElementById('albumName');
+  const hero =
+    document.getElementById(
+      'hero'
+    );
 
-    const albumArtist =
-      document.getElementById('albumArtist');
+  const albumsSection =
+    document.getElementById(
+      'albumsSection'
+    );
 
-    const albumCover =
-      document.getElementById('albumCover');
+  const albumPanel =
+    document.getElementById(
+      'albumPanel'
+    );
 
-    const hero =
-      document.getElementById('hero');
+  if (albumName) {
 
-    const albumsSection =
-      document.getElementById('albumsSection');
-
-    const albumPanel =
-      document.getElementById('albumPanel');
-
-    if (albumName) {
-      albumName.textContent =
-        currentAlbum.name;
-    }
-
-    if (albumArtist) {
-      albumArtist.textContent =
-        `${currentAlbum.artist} · ${currentAlbum.year} · Spotify`;
-    }
-
-    if (albumCover) {
-      albumCover.innerHTML = `
-        <img
-          src="${currentAlbum.cover}"
-          alt="Capa do álbum ${currentAlbum.name}"
-        />
-      `;
-    }
-
-    if (hero) {
-      hero.style.display = 'none';
-    }
-
-    if (albumsSection) {
-      albumsSection.style.display = 'none';
-    }
-
-    if (albumPanel) {
-      albumPanel.style.display = 'block';
-    }
-
-    const personalReview =
-      document.getElementById('personalReview');
-
-    if (personalReview) {
-      personalReview.value = '';
-    }
-
-  } catch (error) {
-    console.error(error);
-
-    const feedback =
-      document.getElementById('albumFeedback');
-
-    if (feedback) {
-      feedback.textContent =
-        'Não foi possível carregar a tracklist. Tente novamente em alguns minutos.';
-
-      feedback.className =
-        'feedback error';
-    }
+    albumName.textContent =
+      currentAlbum.name;
   }
-}
+
+  if (albumArtist) {
+
+    albumArtist.textContent =
+      `${currentAlbum.artist} · ${currentAlbum.year} · Spotify`;
+  }
+
+  if (albumCover) {
+
+    albumCover.innerHTML = `
+      <img
+        src="${currentAlbum.cover}"
+        alt="Capa do álbum ${currentAlbum.name}"
+      />
+    `;
+  }
+
+  if (hero) {
+    hero.style.display = 'none';
+  }
+
+  if (albumsSection) {
+    albumsSection.style.display = 'none';
+  }
+
+  if (albumPanel) {
+    albumPanel.style.display = 'block';
+  }
+
+  const personalReview =
+    document.getElementById(
+      'personalReview'
+    );
+
+  if (personalReview) {
+    personalReview.value = '';
+  }
 
   createTracks();
   updateAverage();
@@ -1199,7 +1176,7 @@ async function selectSpotifyAlbum(album) {
     top: 0,
     behavior: 'smooth'
   });
-{}
+}
 
 function selectAlbumSuggestion(albumKey) {
 
@@ -2220,4 +2197,4 @@ document.addEventListener(
     setupInitialState();
   }
 );
-}
+
