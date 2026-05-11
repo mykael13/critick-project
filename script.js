@@ -129,9 +129,6 @@ function normalizeReviews() {
 
     .map(review => {
 
-      const albumKey =
-        getAlbumKeyByName(review.album);
-
       const albumData =
         albumKey
           ? albums[albumKey]
@@ -2264,49 +2261,97 @@ function renderWeeklyTopAlbums() {
 return `
   <article
     class="album-card"
-    ${albumKey ? `onclick="openAlbum('${albumKey}')"` : ''}
+    onclick="openReviewedAlbum('${review.album}')"
   >
 
-          <div class="album-cover">
-            <img
-              src="${review.cover}"
-              alt="${review.album}"
-            />
-          </div>
+    <div class="album-cover">
+      <img
+        src="${review.cover}"
+        alt="${review.album}"
+      />
+    </div>
 
-          <div class="album-card-body">
+    <div class="album-card-body">
 
-            <div>
-              <h3>
-                #${index + 1} ${review.album}
-              </h3>
+      <div>
+        <h3>
+          #${index + 1} ${review.album}
+        </h3>
 
-              <p>
-                ${review.artist} · ${review.year || '—'}
-              </p>
-            </div>
+        <p>
+          ${review.artist} · ${review.year || '—'}
+        </p>
+      </div>
 
-            <div class="album-meta">
+      <div class="album-meta">
 
-              <span class="score-pill">
-                ${Number(review.average).toFixed(1)}
-              </span>
+        <span class="score-pill">
+          ${Number(review.average).toFixed(1)}
+        </span>
 
-              <span class="muted-pill">
-                ${review.trackCount || 0} faixas
-              </span>
+        <span class="muted-pill">
+          ${review.trackCount || 0} faixas
+        </span>
 
-            </div>
+      </div>
 
-          </div>
+    </div>
 
-        </article>
-      `;
+  </article>
+`;
     }).join('');
 }
 
 function openFriendReview(reviewId) {
   alert('Aqui vai abrir a avaliação completa: ' + reviewId);
+}
+
+function openReviewedAlbum(albumName) {
+  const review =
+    userReviews.find(item => item.album === albumName);
+
+  if (!review) return;
+
+  currentAlbum = {
+    name: review.album,
+    artist: review.artist,
+    year: review.year,
+    genre: 'Avaliado',
+    cover: review.cover,
+    tracks: [
+      {
+        title: 'Avaliação geral do álbum',
+        score: null
+      }
+    ]
+  };
+
+  selectedAlbumKey = '';
+
+  const hero = document.getElementById('hero');
+  const albumsSection = document.getElementById('albumsSection');
+  const albumPanel = document.getElementById('albumPanel');
+
+  document.getElementById('albumName').textContent = currentAlbum.name;
+  document.getElementById('albumArtist').textContent =
+    `${currentAlbum.artist} · ${currentAlbum.year} · Avaliado`;
+
+  document.getElementById('albumCover').innerHTML = `
+    <img src="${currentAlbum.cover}" alt="${currentAlbum.name}">
+  `;
+
+  if (hero) hero.style.display = 'none';
+  if (albumsSection) albumsSection.style.display = 'none';
+  if (albumPanel) albumPanel.style.display = 'block';
+
+  createTracks();
+  updateAverage();
+  validateReviewCompletion();
+
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
 }
 
 document.addEventListener(
