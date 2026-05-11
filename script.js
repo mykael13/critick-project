@@ -866,6 +866,8 @@ function normalizeSpotifyAlbum(album) {
       DEFAULT_PROFILE_IMAGE,
 
     tracks: tracks
+  };
+}
 
 async function searchAlbum() {
 
