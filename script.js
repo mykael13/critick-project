@@ -2386,51 +2386,79 @@ function showAlreadyReviewedModal(albumKey, review) {
   modal.className = 'already-reviewed-modal';
   modal.id = 'alreadyReviewedModal';
 
-  modal.innerHTML = `
-    <div class="already-reviewed-card">
-      <button
-        class="already-reviewed-close"
-        onclick="closeAlreadyReviewedModal()"
-      >
-        Fechar
-      </button>
+modal.innerHTML = `
+  <div class="already-reviewed-card">
 
-      <span class="already-reviewed-kicker">
-        Você já criticou este álbum
-      </span>
+    <button
+      class="already-reviewed-close"
+      onclick="closeAlreadyReviewedModal()"
+    >
+      ×
+    </button>
 
-      <h2>
-        ${review.album}
-      </h2>
+    <div class="already-reviewed-top">
+      <img
+        src="${review.cover}"
+        alt="${review.album}"
+      />
 
-      <p>
-        Sua nota atual é <strong>${Number(review.average).toFixed(1)}</strong>.
-        Você pode revisar sua opinião ou editar a avaliação quando quiser.
-      </p>
+      <div>
 
-      ${
-        review.text
-          ? `<blockquote>“${review.text}”</blockquote>`
-          : ''
-      }
+        <span class="already-reviewed-kicker">
+          Você já criticou este álbum
+        </span>
 
-      <div class="already-reviewed-actions">
-        <button
-          class="black-btn"
-          onclick="openReviewedAlbum('${review.album}'); closeAlreadyReviewedModal();"
-        >
-          Ver minha avaliação
-        </button>
+        <h2>
+          ${review.album}
+        </h2>
 
-        <button
-          class="ghost-btn"
-          onclick="openAlbum('${albumKey}'); closeAlreadyReviewedModal();"
-        >
-          Editar avaliação
-        </button>
+        <p class="already-reviewed-meta">
+          ${review.artist} · ${review.year}
+        </p>
+
       </div>
     </div>
-  `;
+
+    <div class="already-reviewed-score">
+      ${Number(review.average).toFixed(1)}
+    </div>
+
+    ${
+      review.text
+        ? `
+          <blockquote>
+            “${review.text}”
+          </blockquote>
+        `
+        : ''
+    }
+
+    <div class="already-reviewed-actions">
+
+      <button
+        class="black-btn"
+        onclick="
+          openReviewedAlbum('${review.album}');
+          closeAlreadyReviewedModal();
+        "
+      >
+        Ver avaliação
+      </button>
+
+      <button
+        class="ghost-btn"
+        onclick="
+          openAlbum('${albumKey}');
+          closeAlreadyReviewedModal();
+        "
+      >
+        Editar
+      </button>
+
+    </div>
+
+  </div>
+`;
 
   document.body.appendChild(modal);
 }
