@@ -2354,6 +2354,96 @@ function openReviewedAlbum(albumName) {
   });
 }
 
+function checkExistingReviewBeforeOpen(albumKey) {
+  const album = albums[albumKey];
+
+  if (!album) return;
+
+  const existingReview =
+    userReviews.find(review => {
+      return review.album === album.name;
+    });
+
+  if (!existingReview) {
+    openAlbum(albumKey);
+    return;
+  }
+
+  showAlreadyReviewedModal(albumKey, existingReview);
+}
+
+function showAlreadyReviewedModal(albumKey, review) {
+  const oldModal =
+    document.getElementById('alreadyReviewedModal');
+
+  if (oldModal) {
+    oldModal.remove();
+  }
+
+  const modal =
+    document.createElement('div');
+
+  modal.className = 'already-reviewed-modal';
+  modal.id = 'alreadyReviewedModal';
+
+  modal.innerHTML = `
+    <div class="already-reviewed-card">
+      <button
+        class="already-reviewed-close"
+        onclick="closeAlreadyReviewedModal()"
+      >
+        Fechar
+      </button>
+
+      <span class="already-reviewed-kicker">
+        Você já criticou este álbum
+      </span>
+
+      <h2>
+        ${review.album}
+      </h2>
+
+      <p>
+        Sua nota atual é <strong>${Number(review.average).toFixed(1)}</strong>.
+        Você pode revisar sua opinião ou editar a avaliação quando quiser.
+      </p>
+
+      ${
+        review.text
+          ? `<blockquote>“${review.text}”</blockquote>`
+          : ''
+      }
+
+      <div class="already-reviewed-actions">
+        <button
+          class="black-btn"
+          onclick="openReviewedAlbum('${review.album}'); closeAlreadyReviewedModal();"
+        >
+          Ver minha avaliação
+        </button>
+
+        <button
+          class="ghost-btn"
+          onclick="openAlbum('${albumKey}'); closeAlreadyReviewedModal();"
+        >
+          Editar avaliação
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+}
+
+function closeAlreadyReviewedModal() {
+  const modal =
+    document.getElementById('alreadyReviewedModal');
+
+  if (modal) {
+    modal.remove();
+  }
+}
+
 document.addEventListener(
   'DOMContentLoaded',
   function() {
