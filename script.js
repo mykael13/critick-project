@@ -805,24 +805,20 @@ function focusAlbumSearch() {
   }, 100);
 }
 
-async function getAlbumTracks(albumId) {
-
-  const response =
-    await fetch(
-      `/api/spotify/album/${albumId}`
-    );
-
-  const data =
-    await response.json();
-
-  console.log('API RESPONSE:', data);
-
-  return (
-    data.items ||
-    data.tracks?.items ||
-    data.tracks ||
-    []
+async function getSpotifyAlbumDetails(albumId) {
+  const response = await fetch(
+    `/api/spotify?albumId=${encodeURIComponent(albumId)}`
   );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.error || 'Erro ao buscar detalhes do álbum.'
+    );
+  }
+
+  return data.album;
 }
 
 function normalizeSpotifyTrack(track) {
@@ -950,6 +946,8 @@ async function searchAlbum() {
     selectSpotifyAlbum(
       results[0]
     );
+
+
 
   } catch (error) {
 
@@ -1104,15 +1102,10 @@ async function selectSpotifyAlbum(album) {
         'feedback';
     }
 
-let fullAlbum = album;
-
-try {
-  if (album.id) {
-    fullAlbum = await getSpotifyAlbumDetails(album.id);
-  }
-} catch (detailsError) {
-  console.error('Erro ao buscar tracklist:', detailsError);
-}
+    const fullAlbum =
+      album.id
+        ? await getSpotifyAlbumDetails(album.id)
+        : album;
 
     const normalizedAlbum =
       normalizeSpotifyAlbum(fullAlbum);
@@ -1178,23 +1171,6 @@ try {
     if (personalReview) {
       personalReview.value = '';
     }
-
-    createTracks();
-    updateAverage();
-    validateReviewCompletion();
-    updateProfilePreview();
-
-    hideAlbumSuggestions();
-
-    if (feedback) {
-      feedback.textContent = '';
-      feedback.className = 'feedback';
-    }
-
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
 
   } catch (error) {
     console.error(error);
@@ -2245,4 +2221,3 @@ document.addEventListener(
   }
 );
 }
-
