@@ -449,6 +449,16 @@ function createTracks() {
 
   container.innerHTML = '';
 
+  if (!currentAlbum.tracks || currentAlbum.tracks.length === 0) {
+  container.innerHTML = `
+    <p class="empty-profile">
+      Não foi possível carregar a tracklist desse álbum. Tente novamente em alguns minutos.
+    </p>
+  `;
+
+  return;
+}
+
   currentAlbum.tracks.forEach(
     (track, index) => {
 
@@ -855,17 +865,7 @@ function normalizeSpotifyAlbum(album) {
       album.images?.[0]?.url ||
       DEFAULT_PROFILE_IMAGE,
 
-    tracks:
-      tracks.length > 0
-        ? tracks
-        : [
-            {
-              title: 'Avaliação geral do álbum',
-              score: null
-            }
-          ]
-  };
-}
+    tracks: tracks
 
 async function searchAlbum() {
 
