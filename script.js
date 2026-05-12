@@ -1238,19 +1238,24 @@ function searchFriend() {
 }
 
 function openProfilePanel() {
-
   const profilePanel =
-    document.getElementById(
-      'profilePanel'
-    );
+    document.getElementById('profilePanel');
 
   const profileMenu =
-    document.getElementById(
-      'profileMenu'
-    );
+    document.getElementById('profileMenu');
 
   if (profilePanel) {
     profilePanel.classList.add('show');
+
+    // força abrir no topo
+    profilePanel.scrollTop = 0;
+
+    const content =
+      profilePanel.querySelector('.profile-panel-content');
+
+    if (content) {
+      content.scrollTop = 0;
+    }
   }
 
   if (profileMenu) {
